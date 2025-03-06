@@ -18,22 +18,26 @@ const Login = ({ auth }) => {
   const [remember, setRemember] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  // If already logged in, redirect to appropriate dashboard
+  // If already logged in, redirect to appropriate dashboard - but only once on component mount
   useEffect(() => {
+    console.log("Login mounted, auth state:", auth.isAuthenticated, auth.isAdmin);
+    // Only redirect if authentication is already confirmed
     if (auth.isAuthenticated) {
+      console.log("User is authenticated, redirecting");
       if (auth.isAdmin) {
-        navigate('/admin');
+        navigate('/admin', { replace: true });
       } else {
-        navigate('/dashboard');
+        navigate('/dashboard', { replace: true });
       }
     }
-  }, [auth, navigate]);
+  }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
     setIsLoading(true);
     
     try {
+      console.log("Attempting login with:", email);
       const success = auth.login(email, password, remember);
       
       if (success) {
@@ -44,10 +48,11 @@ const Login = ({ auth }) => {
         });
         
         // Redirect based on user role
+        console.log("Login successful, redirecting based on role. isAdmin:", auth.isAdmin);
         if (auth.isAdmin) {
-          navigate('/admin');
+          navigate('/admin', { replace: true });
         } else {
-          navigate('/dashboard');
+          navigate('/dashboard', { replace: true });
         }
       } else {
         toast({
@@ -55,14 +60,15 @@ const Login = ({ auth }) => {
           description: "Ungültige E-Mail oder Passwort. Bitte versuchen Sie es erneut.",
           variant: "destructive",
         });
+        setIsLoading(false);
       }
     } catch (error) {
+      console.error("Login error:", error);
       toast({
         title: "Fehler",
         description: "Bei der Anmeldung ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.",
         variant: "destructive",
       });
-    } finally {
       setIsLoading(false);
     }
   };

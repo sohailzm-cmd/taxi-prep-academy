@@ -18,16 +18,19 @@ const Register = ({ auth }) => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  // If already logged in, redirect to appropriate dashboard
+  // If already logged in, redirect to appropriate dashboard - but only once on component mount
   useEffect(() => {
+    console.log("Register mounted, auth state:", auth.isAuthenticated, auth.isAdmin);
+    // Only redirect if authentication is already confirmed
     if (auth.isAuthenticated) {
+      console.log("User is authenticated, redirecting");
       if (auth.isAdmin) {
-        navigate('/admin');
+        navigate('/admin', { replace: true });
       } else {
-        navigate('/dashboard');
+        navigate('/dashboard', { replace: true });
       }
     }
-  }, [auth, navigate]);
+  }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -44,6 +47,7 @@ const Register = ({ auth }) => {
     setIsLoading(true);
     
     try {
+      console.log("Attempting registration with:", email);
       const success = auth.register(name, email, password);
       
       if (success) {
@@ -52,21 +56,22 @@ const Register = ({ auth }) => {
           description: "Willkommen bei TUM-Academy!",
           variant: "default",
         });
-        navigate('/dashboard');
+        navigate('/dashboard', { replace: true });
       } else {
         toast({
           title: "Registrierung fehlgeschlagen",
           description: "Bei der Registrierung ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.",
           variant: "destructive",
         });
+        setIsLoading(false);
       }
     } catch (error) {
+      console.error("Registration error:", error);
       toast({
         title: "Fehler",
         description: "Bei der Registrierung ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.",
         variant: "destructive",
       });
-    } finally {
       setIsLoading(false);
     }
   };
